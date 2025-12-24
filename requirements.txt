@@ -1,0 +1,6 @@
+flask
+turftopic
+pandas
+numpy
+scikit-learn
+sentence-transformers

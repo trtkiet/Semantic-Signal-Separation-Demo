@@ -1,0 +1,6 @@
+.venv/
+*.ipynb
+*.jsonl
+__pycache__/
+*.pdf
+*.csv

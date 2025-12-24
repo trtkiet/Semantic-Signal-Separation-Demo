@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S³ Semantic Signal Separation Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        .topic-card {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        .positive-terms { color: #198754; }
+        .negative-terms { color: #dc3545; }
+        #plot-container {
+            height: 600px;
+            width: 100%;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-4">
+    <h1 class="mb-4">S³: Semantic Signal Separation <small class="text-muted">Concept Compass</small></h1>
+
+    <!-- Input Section -->
+    <div class="card mb-4">
+        <div class="card-header">Corpus Entry</div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label for="corpusInput" class="form-label">Paste documents (one per line):</label>
+                <textarea class="form-control" id="corpusInput" rows="5" placeholder="Enter your text corpus here..."></textarea>
+                <div class="form-text">Enter at least 10 lines of text for meaningful analysis.</div>
+            </div>
+            <button id="trainBtn" class="btn btn-primary">Train S³ Model</button>
+        </div>
+    </div>
+
+    <!-- Visualization Section (Hidden initially) -->
+    <div id="vizSection" style="display: none;">
+        <div class="row">
+            <!-- Sidebar: Topic List -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">Semantic Axes (Topics)</div>
+                    <div class="card-body" style="max-height: 700px; overflow-y: auto;">
+                        <div id="topicList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main: Concept Compass -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span>Concept Compass</span>
+                        <div class="d-flex gap-2">
+                            <select id="xAxisSelect" class="form-select form-select-sm" style="width: 120px;"></select>
+                            <span class="align-self-center">and</span>
+                            <select id="yAxisSelect" class="form-select form-select-sm" style="width: 120px;"></select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="plot-container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Spinner -->
+<div id="loading" class="loading-overlay">
+    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+
+<script>
+    let topicsData = [];
+
+    document.getElementById('trainBtn').addEventListener('click', async () => {
+        const text = document.getElementById('corpusInput').value;
+        if (!text.trim()) {
+            alert('Please enter some text.');
+            return;
+        }
+
+        showLoading(true);
+        try {
+            const response = await fetch('/process', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            });
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Training failed');
+            }
+
+            topicsData = data.topics;
+            renderTopics(topicsData);
+            setupAxesSelectors(topicsData);
+            
+            // Show viz section
+            document.getElementById('vizSection').style.display = 'block';
+            
+            // Initial plot (Axis 0 vs Axis 1)
+            if (topicsData.length >= 2) {
+                updatePlot(0, 1);
+            } else {
+                updatePlot(0, 0); // Fallback
+            }
+
+        } catch (err) {
+            alert('Error: ' + err.message);
+        } finally {
+            showLoading(false);
+        }
+    });
+
+    function renderTopics(topics) {
+        const container = document.getElementById('topicList');
+        container.innerHTML = '';
+        
+        topics.forEach(topic => {
+            const div = document.createElement('div');
+            div.className = 'card topic-card';
+            div.innerHTML = `
+                <div class="card-body p-2">
+                    <h6 class="card-title">Axis ${topic.id}</h6>
+                    <div class="mb-1">
+                        <span class="badge bg-success">+</span> <span class="positive-terms">${topic.positive.slice(0, 10).join(', ')}</span>
+                    </div>
+                    <div>
+                        <span class="badge bg-danger">-</span> <span class="negative-terms">${topic.negative.slice(0, 10).join(', ')}</span>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function setupAxesSelectors(topics) {
+        const xSelect = document.getElementById('xAxisSelect');
+        const ySelect = document.getElementById('yAxisSelect');
+        
+        xSelect.innerHTML = '';
+        ySelect.innerHTML = '';
+        
+        topics.forEach(topic => {
+            const optionX = new Option(`Axis ${topic.id}`, topic.id);
+            const optionY = new Option(`Axis ${topic.id}`, topic.id);
+            xSelect.add(optionX);
+            ySelect.add(optionY);
+        });
+        
+        // Set defaults
+        if (topics.length > 1) {
+            ySelect.value = topics[1].id;
+        }
+
+        // Add event listeners
+        const updateHandler = () => {
+            updatePlot(xSelect.value, ySelect.value);
+        };
+        
+        xSelect.addEventListener('change', updateHandler);
+        ySelect.addEventListener('change', updateHandler);
+    }
+
+    async function updatePlot(xId, yId) {
+        showLoading(true);
+        try {
+            const response = await fetch('/visualize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ axis_x: xId, axis_y: yId })
+            });
+            
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error);
+            
+            renderPlot(data.plot_data, data.axis_x_label, data.axis_y_label);
+            
+        } catch (err) {
+            console.error(err);
+            alert('Failed to update plot');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function renderPlot(plotData, xLabel, yLabel) {
+        const trace = {
+            x: plotData.map(d => d.x),
+            y: plotData.map(d => d.y),
+            text: plotData.map(d => d.word),
+            mode: 'text+markers',
+            type: 'scatter',
+            textposition: 'top center',
+            marker: { size: 8, opacity: 0.6 },
+            textfont: { size: 10 }
+        };
+
+        const layout = {
+            title: `${xLabel} and ${yLabel}`,
+            xaxis: { title: xLabel, zeroline: true },
+            yaxis: { title: yLabel, zeroline: true },
+            hovermode: 'closest'
+        };
+
+        Plotly.newPlot('plot-container', [trace], layout);
+    }
+
+    function showLoading(show) {
+        document.getElementById('loading').style.display = show ? 'flex' : 'none';
+    }
+</script>
+
+</body>
+</html>
