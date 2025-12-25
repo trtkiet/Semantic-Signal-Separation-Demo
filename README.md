@@ -6,7 +6,7 @@ The application allows users to input a text corpus, train an S³ model to disco
 
 ## Features
 
-*   **Corpus Entry**: Simple text area to paste documents (one per line).
+*   **Corpus Entry**: Upload a text file (`.txt`) containing documents.
 *   **Text Preprocessing**: Automatic lowercasing and removal of special characters.
 *   **S³ Model Training**: Uses `SemanticSignalSeparation` with `all-MiniLM-L6-v2` encoder and "combined" feature importance.
 *   **Semantic Axes Display**: Shows discovered topics with their top positive and negative terms (e.g., "Deep Learning vs. Algorithm").
@@ -47,7 +47,7 @@ The application allows users to input a text corpus, train an S³ model to disco
     ```
     http://127.0.0.1:5000
     ```
-3.  **Paste your text corpus** into the input box. Ensure you have at least 10 lines of text for meaningful results.
+3.  **Upload your text corpus** (a `.txt` file) using the file input. Ensure the file has at least 10 lines of text for meaningful results.
 4.  Click **"Train S³ Model"**.
     *   *Note: The first run might take a moment to download the embedding model.*
 5.  Once trained, explore the **Semantic Axes** in the sidebar.
