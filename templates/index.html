@@ -38,9 +38,9 @@
         <div class="card-header">Corpus Entry</div>
         <div class="card-body">
             <div class="mb-3">
-                <label for="corpusInput" class="form-label">Paste documents (one per line):</label>
-                <textarea class="form-control" id="corpusInput" rows="5" placeholder="Enter your text corpus here..."></textarea>
-                <div class="form-text">Enter at least 10 lines of text for meaningful analysis.</div>
+                <label for="corpusInput" class="form-label">Upload corpus (txt file, one document per line):</label>
+                <input class="form-control" type="file" id="corpusInput" accept=".txt">
+                <div class="form-text">The file should contain at least 10 lines of text for meaningful analysis.</div>
             </div>
             <button id="trainBtn" class="btn btn-primary">Train S³ Model</button>
         </div>
@@ -90,18 +90,22 @@
     let topicsData = [];
 
     document.getElementById('trainBtn').addEventListener('click', async () => {
-        const text = document.getElementById('corpusInput').value;
-        if (!text.trim()) {
-            alert('Please enter some text.');
+        const fileInput = document.getElementById('corpusInput');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            alert('Please select a file.');
             return;
         }
+
+        const formData = new FormData();
+        formData.append('file', file);
 
         showLoading(true);
         try {
             const response = await fetch('/process', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: text })
+                body: formData
             });
             
             const data = await response.json();

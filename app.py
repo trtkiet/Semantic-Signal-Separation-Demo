@@ -25,11 +25,18 @@ def index():
 def process():
     global current_model, current_corpus
     
-    data = request.json
-    text = data.get('text', '')
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+        
+    file = request.files['file']
     
-    if not text:
-        return jsonify({'error': 'No text provided'}), 400
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+        
+    try:
+        text = file.read().decode('utf-8')
+    except Exception as e:
+        return jsonify({'error': f'Error reading file: {str(e)}'}), 400
     
     # Split text into documents (one per line as per plan)
     # Preprocess each line
@@ -40,8 +47,8 @@ def process():
     if not corpus:
         return jsonify({'error': 'No valid text found after preprocessing. Please check your input.'}), 400
 
-    # if len(corpus) < 10: # Basic check to ensure enough data
-    #     return jsonify({'error': 'Please provide at least 10 documents (lines) for meaningful analysis.'}), 400
+    if len(corpus) < 10: # Basic check to ensure enough data
+        return jsonify({'error': 'Please provide at least 10 documents (lines) for meaningful analysis.'}), 400
 
     current_corpus = corpus
     
