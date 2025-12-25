@@ -1,3 +1,26 @@
+<!-- Banner -->
+<p align="center">
+  <a href="https://www.uit.edu.vn/" title="University of Information Technology" style="border: none;">
+    <img src="https://i.imgur.com/WmMnSRt.png" alt="University of Information Technology">
+  </a>
+</p>
+
+<h1 align="center"><b>Natural Language Processing</b></h>
+
+## GROUP MEMBERS
+| #   | Student ID| Name              | Email                  |
+|-----|-----------|-------------------|------------------------|
+| 1   | 23520822  | Tran Tuan Kiet   | 23520774@gm.uit.edu.vn |
+| 2   | 23520872  | Nguyen Thang Loi  | 23520872@gm.uit.edu.vn |
+| 3   | 23521527  | Nguyen My Thong   | 23521527@gm.uit.edu.vn |
+
+## COURSE INTRODUCTION
+* **Tên môn học:** Natural Language Processing
+* **Mã môn học:** CS221
+* **Mã lớp:** CS221.Q12
+* **Năm học:** 2025 - 2026
+* **Giảng viên**: Ph.D Nguyen Thi Quy 
+
 # S³: Semantic Signal Separation Demo
 
 This project is a Flask-based web application that demonstrates the **Semantic Signal Separation (S³)** method for text analysis, as implemented in the [turftopic](https://github.com/x-tabdeveloping/turftopic) library.
