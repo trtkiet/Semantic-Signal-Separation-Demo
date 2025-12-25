@@ -15,11 +15,11 @@
 | 3   | 23521527  | Nguyen My Thong   | 23521527@gm.uit.edu.vn |
 
 ## COURSE INTRODUCTION
-* **Tên môn học:** Natural Language Processing
-* **Mã môn học:** CS221
-* **Mã lớp:** CS221.Q12
-* **Năm học:** 2025 - 2026
-* **Giảng viên**: Ph.D Nguyen Thi Quy 
+* **Course Name:** Natural Language Processing
+* **Course ID:** CS221
+* **Class ID:** CS221.Q12
+* **Year:** 2025 - 2026
+* **Lecturer**: Ph.D Nguyen Thi Quy 
 
 # S³: Semantic Signal Separation Demo
 
